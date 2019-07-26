@@ -1,0 +1,88 @@
+// # 概述
+// 使用 Google 的 Protocol Buffer (简称 protobuf) 定义.
+// 旅行采购员问题原始输入输出数据格式.
+// TravelingPurchaser 定义了算法所需的全部数据.
+// TravelingPurchaser.Input 定义了算法所需的全部输入数据.
+// TravelingPurchaser.Output 定义了算法所需的全部输出数据, 应输出至提交文件的第二行以后.
+// TravelingPurchaser.Submission 定义了向测评系统提交的计算结果文件的信息摘要, 应输出至提交文件的第一行.
+
+
+syntax = "proto3";
+
+package pb;
+
+option java_package = "pb";
+option java_outer_classname = "TravelingPurchaser";
+// option cc_enable_arenas = true;
+
+
+// 主要数据.
+message TravelingPurchaser {
+  message Input { // 输入.
+    Graph graph = 1; // 拓扑图.
+    repeated int32 demands = 2; // demands[p] 表示商品 p 的需求量.
+    int32 src = 3; // 采购员出发节点编号. 即 VRP 中的仓库 (depot).
+    int32 dst = 4; // 若与 src 相同表示求一个回路, 否则为路径的终点.
+
+    // - 带必经路径 (path) 问题 => 带必经回路 (tour) 问题.
+    //   - 有向图: 删除起点的所有入度, 终点的出度全部指向起点, 删除终点.
+    //   - 无向图: 增加一个只与起点和终点相连的点设为必经点.
+    // - 带必经回路问题 => 带必经路径问题.
+    //   - 有向图: 增加一个虚拟终点, 挑选任一必经点作为起点, 将其所有入度指向虚拟终点.
+    //   - 无向图: 挑选任一必经点作为起点, 增加一个度与其相同的虚拟终点.
+  }
+	
+  message Output { // 输出.
+    repeated Purchase path = 1; // path[i] 表示路径上第 i 个节点处的采购情况.
+  }
+
+  message Graph { // 拓扑图信息. 节点从 0 开始连续编号.
+    repeated Node nodes = 1; // 节点列表.
+    repeated Edge edges = 2; // 有向边列表. 非空时忽略节点坐标.
+  }
+
+  message Node { // 节点信息.
+    map<int32, Supply> supplies = 1; // supplies[p] 表示商品 p 的供应情况.
+
+    int32 x = 2; // 节点横坐标. 边列表为空时有效.
+    int32 y = 3; // 节点纵坐标. 边列表为空时有效.
+  }
+
+  message Supply { // 商品供应信息.
+    int32 quantity = 1; // 供应量上限.
+    int32 price = 2; // 单位售价.
+  }
+
+  message Edge { // 边信息.
+    int32 src = 1; // 边的源节点编号.
+    int32 dst = 2; // 边的宿节点编号.
+    int32 cost = 3; // 经过该边的开销.
+  }
+
+  message Purchase { // 采购信息.
+    int32 node = 1; // 采购发生节点编号.
+    map<int32, int32> quantities = 2; // quantities[p] 表示商品 p 的采购量.
+  }
+}
+
+message Submission { // 测评系统提交信息摘要.
+  // 应在 SDK 内由提交者手工填写的数据项.
+  string author = 1; // 提交者姓名.
+  string algorithm = 2; // 算法名称.
+  string thread = 3; // 算法线程数
+  string cpu = 4; // 处理器型号与主频.
+  string ram = 5; // 内存容量与频率. (Windows 下可以使用 wmic memorychip 命令查看)
+  string language = 6; // 编程语言.
+  string compiler = 7; // 编译器.
+  string os = 8; // 操作系统
+
+  // 由 SDK 自动记录的数据项.
+  string problem = 21; // 问题名称.
+  string instance = 22; // 算例名称.
+  string duration = 23; // 求解耗时.
+
+  // 由服务器自动计算的数据项.
+  double obj = 31; // 计算结果目标函数值.
+  string email = 32; // 提交者邮箱.
+  string date = 33; // 提交时间.
+}

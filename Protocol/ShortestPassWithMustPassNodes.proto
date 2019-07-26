@@ -1,0 +1,30 @@
+// # 概述
+// 使用 Google 的 Protocol Buffer (简称 protobuf) 定义.
+// 必经点最短路问题原始输入数据格式, 仅用于将文献中的经典算例转换为旅行采购员的统一算例格式.
+
+
+syntax = "proto3";
+
+package pb;
+
+option java_package = "pb";
+option java_outer_classname = "ShortestPassWithMustPassNodes";
+// option cc_enable_arenas = true;
+
+
+// 主要数据.
+message ShortestPassWithMustPassNodes {
+  string Name = 1; // 算例名称.
+  int32 Source = 2; // 起点.
+  int32 Target = 3; // 终点.
+  repeated int32 MustPass = 4; // 必经节点列表.
+  repeated Edge Edges = 5; // 边列表.
+  
+
+  message Edge { // 边信息.
+    int32 id = 1; // 边编号.
+    int32 src = 2; // 边的源节点编号.
+    int32 dst = 3; // 边的宿节点编号.
+    int32 cost = 4; // 经过该边的开销.
+  }
+}
